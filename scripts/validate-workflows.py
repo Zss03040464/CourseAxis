@@ -24,6 +24,12 @@ PINNED_ACTIONS = {
 }
 USES_PATTERN = re.compile(r"^\s*uses:\s*([^\s#]+)", re.MULTILINE)
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+SDKMANAGER_ASSIGNMENT = 'SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"'
+ANDROID_SDKMANAGER_CONTRACT = (
+    SDKMANAGER_ASSIGNMENT,
+    'test -x "$SDKMANAGER"',
+    '"$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"',
+)
 
 
 def workflow_permissions(text: str) -> set[str]:
@@ -86,12 +92,27 @@ def validate_workflow(relative: str, text: str) -> list[str]:
             f"{relative}: top-level permissions are not the approved minimum"
         )
 
+    if relative.endswith(("ci.yml", "codeql.yml")):
+        sdkmanager_lines = [
+            line.strip()
+            for line in text.splitlines()
+            if re.search(r"\bsdkmanager\b", line)
+        ]
+        if sdkmanager_lines != [SDKMANAGER_ASSIGNMENT]:
+            errors.append(
+                f"{relative}: bare Android SDK manager or unapproved path is forbidden"
+            )
+        for fragment in ANDROID_SDKMANAGER_CONTRACT:
+            if fragment not in text:
+                errors.append(
+                    f"{relative}: missing Android SDK manager contract: {fragment}"
+                )
+
     if relative.endswith("ci.yml"):
         for fragment in (
             "runs-on: ubuntu-24.04",
             "runs-on: macos-26",
             'java-version: "17"',
-            'sdkmanager "platforms;android-36" "build-tools;36.0.0"',
             "--dependency-verification=strict",
             "scripts/install-xcodegen.sh",
             "actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca",

@@ -399,6 +399,13 @@ final class CoreTests:XCTestCase{
         XCTAssertEqual(model.next?.dayLabel,"9月7日 周一")
     }
 
+    func testLocalDatePresentationUsesTheAcademicCalendarTimeZone() {
+        let date=LocalValue.date("2026-09-07")!
+
+        XCTAssertEqual(LocalValue.monthDayText(date),"9月7日")
+        XCTAssertEqual(LocalValue.monthDayWeekdayText(date),"9月7日 周一")
+    }
+
     func testWidgetChoosesNearestFutureOccurrenceAcrossTerms() {
         let now=LocalValue.calendar.date(from:DateComponents(year:2026,month:7,day:1,hour:12))!
         let oldTerm=Term(id:"old",name:"旧学期",firstWeekMonday:"2026-02-23",totalWeeks:20)

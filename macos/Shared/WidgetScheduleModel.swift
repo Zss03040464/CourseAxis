@@ -66,7 +66,7 @@ struct WidgetScheduleModel: Equatable {
     private static func summary(_ occurrence: EventOccurrence,now:Date) -> WidgetEventSummary {
         let today=LocalValue.calendar.startOfDay(for:now),day=LocalValue.calendar.startOfDay(for:occurrence.date)
         let offset=LocalValue.calendar.dateComponents([.day],from:today,to:day).day ?? 0
-        let label=offset==0 ? "今天" : offset==1 ? "明天" : occurrence.date.formatted(.dateTime.month().day().weekday(.short).locale(Locale(identifier:"zh_CN")))
+        let label=offset==0 ? "今天" : offset==1 ? "明天" : LocalValue.monthDayWeekdayText(occurrence.date)
         return WidgetEventSummary(id: occurrence.id, title: occurrence.event.title, startTime: LocalValue.timeString(occurrence.start), endTime: LocalValue.timeString(occurrence.end), location: occurrence.event.location, teacher: occurrence.event.teacher, kind: occurrence.event.kind, date: occurrence.date,dayLabel:label,weeksText:WeekCardMetadata.compactWidgetWeeks(occurrence.event))
     }
 }

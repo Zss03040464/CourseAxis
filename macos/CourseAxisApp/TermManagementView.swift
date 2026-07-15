@@ -51,6 +51,8 @@ struct TermManagementView: View {
                     }
                     HStack {
                         DatePicker("第一周日期",selection:firstWeekBinding,displayedComponents:.date)
+                            .environment(\.calendar,LocalValue.calendar)
+                            .environment(\.timeZone,LocalValue.calendar.timeZone)
                         Text("保存为周一：\(firstMonday.isEmpty ? "未设置" : firstMonday)").font(.caption).foregroundStyle(.secondary)
                         TextField("总周数",text:$totalWeeks).frame(width:90)
                     }

@@ -8,6 +8,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/validate-workflows.py"
+ANDROID_WORKFLOWS = (
+    ".github/workflows/ci.yml",
+    ".github/workflows/codeql.yml",
+)
+SDKMANAGER_EXPLICIT_COMMAND = (
+    'SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"\n'
+    '          test -x "$SDKMANAGER"\n'
+    '          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"'
+)
+SDKMANAGER_BARE_COMMAND = 'sdkmanager "platforms;android-36" "build-tools;36.0.0"'
+SDKMANAGER_STEP_MARKER = "      - name: Install Android SDK 36\n"
 SPEC = importlib.util.spec_from_file_location("validate_workflows", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 validate_workflows = importlib.util.module_from_spec(SPEC)
@@ -142,6 +153,66 @@ class WorkflowValidationTests(unittest.TestCase):
             errors = validate_workflows.validate_tree(root)
 
             self.assertTrue(any("before CodeQL tracing" in error for error in errors), errors)
+
+    def test_android_sdkmanager_uses_the_runner_android_home(self) -> None:
+        for relative in ANDROID_WORKFLOWS:
+            with self.subTest(workflow=relative):
+                workflow = ROOT / relative
+                text = workflow.read_text(encoding="utf-8")
+                self.assertIn(SDKMANAGER_EXPLICIT_COMMAND, text)
+
+                errors = validate_workflows.validate_workflow(
+                    relative,
+                    text.replace(
+                        SDKMANAGER_EXPLICIT_COMMAND,
+                        SDKMANAGER_BARE_COMMAND,
+                        1,
+                    ),
+                )
+
+                self.assertTrue(
+                    any("Android SDK manager" in error for error in errors),
+                    errors,
+                )
+
+    def test_android_sdkmanager_rejects_every_unapproved_lowercase_reference(self) -> None:
+        unapproved_steps = (
+            SDKMANAGER_BARE_COMMAND,
+            'command sdkmanager "platforms;android-36"',
+            'env sdkmanager "platforms;android-36"',
+            '"$ANDROID_HOME/tools/bin/sdkmanager" "platforms;android-36"',
+        )
+
+        for relative in ANDROID_WORKFLOWS:
+            workflow = ROOT / relative
+            text = workflow.read_text(encoding="utf-8")
+            weakened_cases = {
+                "bare block command": text.replace(
+                    SDKMANAGER_EXPLICIT_COMMAND,
+                    SDKMANAGER_BARE_COMMAND
+                    + "\n          "
+                    + SDKMANAGER_EXPLICIT_COMMAND,
+                    1,
+                ),
+                **{
+                    step: text.replace(
+                        SDKMANAGER_STEP_MARKER,
+                        f"      - run: {step}\n" + SDKMANAGER_STEP_MARKER,
+                        1,
+                    )
+                    for step in unapproved_steps
+                },
+            }
+            for case, weakened in weakened_cases.items():
+                with self.subTest(workflow=relative, case=case):
+                    self.assertNotEqual(weakened, text)
+
+                    errors = validate_workflows.validate_workflow(relative, weakened)
+
+                    self.assertTrue(
+                        any("bare Android SDK manager" in error for error in errors),
+                        errors,
+                    )
 
     def test_dependabot_covers_all_supported_ecosystems(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

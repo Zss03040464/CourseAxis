@@ -112,7 +112,7 @@ private struct DayColumn: View {
     private var weekdayText:String { let value=LocalValue.calendar.component(.weekday,from:date);return ["周日","周一","周二","周三","周四","周五","周六"][value-1] }
     var body:some View {
         VStack(spacing:0) {
-            VStack { Text(weekdayText);Text(date.formatted(.dateTime.month().day().locale(Locale(identifier:"zh_CN")))).font(.caption).foregroundStyle(.secondary) }
+            VStack { Text(weekdayText);Text(LocalValue.monthDayText(date)).font(.caption).foregroundStyle(.secondary) }
                 .frame(width:width,height:48)
                 .background(LocalValue.calendar.isDateInToday(date) ? CourseAxisDesign.accent.opacity(0.13) : Color(nsColor:.controlBackgroundColor))
             ZStack(alignment:.topLeading) {

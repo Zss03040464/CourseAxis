@@ -138,7 +138,7 @@ struct CourseAxisWidgetView: View {
                 Text(count == 0 ? entry.model.status:"\(count) 项 · \(entry.model.status)").font(.caption2).foregroundStyle(.white.opacity(0.66))
             }
             Spacer()
-            Text(entry.date.formatted(.dateTime.month().day().weekday().locale(Locale(identifier:"zh_CN"))))
+            Text(LocalValue.monthDayWeekdayText(entry.date))
                 .font(large ? .callout.weight(.medium):.caption)
                 .foregroundStyle(.white.opacity(0.72))
         }

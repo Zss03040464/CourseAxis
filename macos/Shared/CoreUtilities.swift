@@ -3,8 +3,12 @@ import Foundation
 enum LocalValue {
     static let calendar: Calendar = { var c=Calendar(identifier:.gregorian);c.locale=Locale(identifier:"en_US_POSIX");c.timeZone=TimeZone(identifier:"Asia/Shanghai")!;return c }()
     static let dateFormatter: DateFormatter = { let f=DateFormatter();f.locale=Locale(identifier:"en_US_POSIX");f.calendar=calendar;f.timeZone=calendar.timeZone;f.dateFormat="yyyy-MM-dd";return f }()
+    private static let monthDayStyle = Date.FormatStyle(locale:Locale(identifier:"zh_CN"),calendar:calendar,timeZone:calendar.timeZone).month().day()
+    private static let monthDayWeekdayStyle = Date.FormatStyle(locale:Locale(identifier:"zh_CN"),calendar:calendar,timeZone:calendar.timeZone).month().day().weekday(.short)
     static func date(_ value:String)->Date?{dateFormatter.date(from:value)}
     static func dateString(_ date:Date)->String{dateFormatter.string(from:date)}
+    static func monthDayText(_ date:Date)->String{date.formatted(monthDayStyle)}
+    static func monthDayWeekdayText(_ date:Date)->String{date.formatted(monthDayWeekdayStyle)}
     static func minutes(_ value:String?)->Int?{guard let value,let m=value.firstMatch(#"^\s*([01]?\d|2[0-3])\s*[:：]\s*([0-5]\d)\s*$"#),m.count>=3,let h=Int(m[1]),let min=Int(m[2]) else{return nil};return h*60+min}
     static func timeString(_ minutes:Int)->String{String(format:"%02d:%02d",minutes/60,minutes%60)}
     static func isoNow()->String{ISO8601DateFormatter().string(from:Date())}
