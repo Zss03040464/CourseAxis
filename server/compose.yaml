@@ -1,0 +1,14 @@
+services:
+  courseaxis-sync:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      COURSEAXIS_ADDR: 0.0.0.0:8787
+      COURSEAXIS_DATA_DIR: /data
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:8787:8787"

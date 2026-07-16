@@ -1,0 +1,12 @@
+[
+  {"section": 1, "start": "08:30", "end": "09:15"},
+  {"section": 2, "start": "09:25", "end": "10:10"},
+  {"section": 3, "start": "10:30", "end": "11:15"},
+  {"section": 4, "start": "11:25", "end": "12:10"},
+  {"section": 5, "start": "13:30", "end": "14:15"},
+  {"section": 6, "start": "14:25", "end": "15:10"},
+  {"section": 7, "start": "15:30", "end": "16:15"},
+  {"section": 8, "start": "16:25", "end": "17:10"},
+  {"section": 9, "start": "18:30", "end": "19:15"},
+  {"section": 10, "start": "19:25", "end": "20:10"}
+]

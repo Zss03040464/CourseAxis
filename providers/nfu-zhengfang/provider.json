@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "nfu-zhengfang",
+  "schoolName": "广州南方学院",
+  "vendor": "ZHENGFANG",
+  "adapterId": "zhengfang-v1",
+  "sessionNamespace": "7c8cd13a-2094-5c1b-9d84-2ee62d7a4f70",
+  "allowedOrigin": "https://jwxt.nfu.edu.cn",
+  "pathPrefix": "/jwglxt/",
+  "loginPath": "/jwglxt/xtgl/login_slogin.html",
+  "homePath": "/jwglxt/xtgl/index_initMenu.html",
+  "requiresThirdPartyCookies": false,
+  "semesterCodes": {
+    "first": "3",
+    "second": "12",
+    "third": "16"
+  }
+}

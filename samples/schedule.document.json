@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "documentId": "synthetic-courseaxis-demo",
+  "updatedAt": "2030-02-01T00:00:00Z",
+  "terms": [
+    {
+      "id": "term-synthetic-demo",
+      "name": "2029-2030 第二学期（合成）",
+      "providerId": null,
+      "school": "示例大学",
+      "campus": "示例校区",
+      "academicYear": "2029",
+      "semesterCode": "S2",
+      "firstWeekMonday": "2030-02-18",
+      "totalWeeks": 18,
+      "timeZone": "Asia/Shanghai",
+      "updatedAt": "2030-02-01T00:00:00Z"
+    }
+  ],
+  "timeRules": [
+    {
+      "id": "rule-synthetic-demo",
+      "termId": "term-synthetic-demo",
+      "school": "示例大学",
+      "campus": "示例校区",
+      "source": "USER",
+      "sections": [
+        {"section": 1, "start": "08:30", "end": "09:15"},
+        {"section": 2, "start": "09:25", "end": "10:10"},
+        {"section": 7, "start": "15:00", "end": "15:45"},
+        {"section": 8, "start": "15:55", "end": "16:40"}
+      ],
+      "updatedAt": "2030-02-01T00:00:00Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "course-synthetic-demo",
+      "externalId": "SYN-C001",
+      "kind": "COURSE",
+      "recurrence": "WEEKLY",
+      "title": "合成课程甲",
+      "teacher": "虚构教师甲",
+      "location": "示例教学楼 A101",
+      "campus": "示例校区",
+      "notes": "完全合成的课程样例",
+      "courseNature": "示例选修课",
+      "totalHours": "16",
+      "credits": "1.0",
+      "termId": "term-synthetic-demo",
+      "date": null,
+      "weekday": 2,
+      "weeks": [1, 2, 3, 4, 5, 6, 7, 8],
+      "startTime": "08:30",
+      "endTime": "10:10",
+      "startSection": 1,
+      "endSection": 2,
+      "timeRuleId": "rule-synthetic-demo",
+      "timeSource": "SECTION_RULE",
+      "resolutionStatus": "RESOLVED",
+      "colorKey": 4,
+      "updatedAt": "2030-02-01T00:00:00Z"
+    },
+    {
+      "id": "exam-synthetic-demo",
+      "externalId": "SYN-E001",
+      "kind": "EXAM",
+      "recurrence": "SINGLE",
+      "title": "合成课程甲 · 示例考试",
+      "teacher": "",
+      "location": "示例教学楼 B202",
+      "campus": "示例校区",
+      "notes": "完全合成的考试样例",
+      "courseNature": null,
+      "totalHours": null,
+      "credits": null,
+      "termId": "term-synthetic-demo",
+      "date": "2030-06-28",
+      "weekday": null,
+      "weeks": [],
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "startSection": null,
+      "endSection": null,
+      "timeRuleId": null,
+      "timeSource": "EXPLICIT",
+      "resolutionStatus": "RESOLVED",
+      "colorKey": 7,
+      "updatedAt": "2030-02-01T00:00:00Z"
+    }
+  ],
+  "tombstones": [],
+  "settings": {
+    "activeTermId": "term-synthetic-demo",
+    "dayStart": "07:30",
+    "dayEnd": "22:30",
+    "showWeekends": true,
+    "widgetUpcomingCount": 3
+  }
+}

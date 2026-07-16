@@ -1,0 +1,74 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze ${{ matrix.language }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            os: ubuntu-24.04
+          - language: swift
+            os: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up JDK 17
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Android SDK 36
+        if: matrix.language == 'java-kotlin'
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Build fixed XcodeGen before tracing
+        if: matrix.language == 'swift'
+        run: ./scripts/install-xcodegen.sh "$RUNNER_TEMP/courseaxis-xcodegen"
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: manual
+      - name: Build Android for CodeQL
+        if: matrix.language == 'java-kotlin'
+        working-directory: android
+        run: ./gradlew --no-daemon --dependency-verification=strict clean :app:assembleDebug --console=plain
+      - name: Build macOS for CodeQL
+        if: matrix.language == 'swift'
+        working-directory: macos
+        run: |
+          "$RUNNER_TEMP/courseaxis-xcodegen/xcodegen" generate
+          xcodebuild \
+            -project CourseAxis.xcodeproj \
+            -scheme CourseAxis \
+            -configuration Debug \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+      - name: Upload CodeQL results
+        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        with:
+          category: /language:${{ matrix.language }}

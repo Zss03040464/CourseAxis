@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    name: Public hygiene and contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Set up Go for actionlint
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "1.26.5"
+          cache: false
+      - name: Validate public source
+        run: |
+          python3 scripts/check-public-hygiene.py --mode source
+          python3 scripts/validate-providers.py
+          python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+          node --check providers/adapters/zhengfang-v1/import.js
+          bash -n scripts/*.sh
+      - name: Validate workflow syntax and policy
+        run: |
+          python3 scripts/validate-workflows.py
+          ruby -e 'require "yaml"; Dir[".github/**/*.yml"].sort.each { |path| YAML.load_file(path); puts "#{path}: OK" }'
+          mkdir -p "$RUNNER_TEMP/courseaxis-bin"
+          GOBIN="$RUNNER_TEMP/courseaxis-bin" go install github.com/rhysd/actionlint/cmd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca
+          "$RUNNER_TEMP/courseaxis-bin/actionlint" .github/workflows/*.yml
+      - name: Confirm generators left the tree clean
+        run: git diff --exit-code
+
+  website:
+    name: Sponsor website
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up fixed Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: site/.node-version
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Validate and build static site
+        working-directory: site
+        run: |
+          npm ci --ignore-scripts
+          npm test
+          npm run lint
+          npm run build
+          test -s dist/LICENSE.txt
+          test -s dist/THIRD_PARTY_NOTICES.txt
+          cd ..
+          python3 scripts/validate-site-build.py
+          cd site
+          npm audit --audit-level=high
+      - name: Confirm generators left the tree clean
+        run: git diff --exit-code
+
+  server:
+    name: Go server and container
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: server/go.mod
+          cache: false
+      - name: Test and vet
+        working-directory: server
+        run: |
+          go test -mod=readonly ./...
+          go vet -mod=readonly ./...
+      - name: Build fixed-base container
+        run: docker build --pull=false -t courseaxis-sync:ci server
+
+  android:
+    name: Android test, lint, and debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up JDK 17
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Run Android gates
+        working-directory: android
+        run: |
+          ./gradlew --no-daemon --dependency-verification=strict \
+            :app:testDebugUnitTest \
+            :app:compileDebugAndroidTestKotlin \
+            :app:lintDebug \
+            :app:assembleDebug \
+            :app:processReleaseMainManifest \
+            --console=plain
+      - name: Verify bundled Provider resources
+        run: |
+          unzip -p android/app/build/outputs/apk/debug/app-debug.apk assets/adapters/zhengfang-v1/import.js | cmp - providers/adapters/zhengfang-v1/import.js
+          unzip -p android/app/build/outputs/apk/debug/app-debug.apk assets/catalog.json | cmp - providers/catalog.json
+          unzip -p android/app/build/outputs/apk/debug/app-debug.apk assets/nfu-zhengfang/provider.json | cmp - providers/nfu-zhengfang/provider.json
+
+  macos:
+    name: Swift tests and macOS app
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Build fixed XcodeGen
+        run: ./scripts/install-xcodegen.sh "$RUNNER_TEMP/courseaxis-xcodegen"
+      - name: Run Swift gates
+        working-directory: macos
+        run: |
+          swift test
+          swift run courseaxis-core-validation
+          swiftc -typecheck -parse-as-library Shared/*.swift CourseAxisApp/*.swift
+          swiftc -typecheck -parse-as-library Shared/*.swift CourseAxisWidget/*.swift
+      - name: Build native app without signing
+        working-directory: macos
+        run: |
+          "$RUNNER_TEMP/courseaxis-xcodegen/xcodegen" generate
+          xcodebuild \
+            -project CourseAxis.xcodeproj \
+            -scheme CourseAxis \
+            -configuration Debug \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Verify bundled Provider resources
+        run: |
+          APP_RESOURCES="macos/DerivedData/Build/Products/Debug/CourseAxis.app/Contents/Resources/providers"
+          cmp providers/catalog.json "$APP_RESOURCES/catalog.json"
+          cmp providers/nfu-zhengfang/provider.json "$APP_RESOURCES/nfu-zhengfang/provider.json"
+          cmp providers/adapters/zhengfang-v1/import.js "$APP_RESOURCES/adapters/zhengfang-v1/import.js"

@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "providerId": "nfu-zhengfang",
+  "payload": {
+    "kbList": [
+      {
+        "kch_id": "SYNTH-COURSE-001",
+        "kcmc": "示例课程 A",
+        "xm": "示例教师",
+        "xqj": "1",
+        "jc": "1-2节",
+        "zcd": "1-4周",
+        "cdmc": "示例教学楼 101",
+        "kcxz": "专业必修课",
+        "zxs": "8",
+        "xf": "1.0"
+      }
+    ],
+    "sjkList": []
+  }
+}

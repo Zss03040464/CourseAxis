@@ -1,0 +1,526 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://courseaxis.local/schema/schedule.schema.json",
+  "title": "CourseAxis Schedule Document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentId",
+    "updatedAt",
+    "terms",
+    "timeRules",
+    "events",
+    "tombstones",
+    "settings"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "terms": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/term"
+      }
+    },
+    "timeRules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/timeRule"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    },
+    "tombstones": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tombstone"
+      }
+    },
+    "settings": {
+      "$ref": "#/$defs/settings"
+    }
+  },
+  "$defs": {
+    "isoTime": {
+      "type": "string",
+      "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "school",
+        "campus",
+        "academicYear",
+        "semesterCode",
+        "firstWeekMonday",
+        "totalWeeks",
+        "timeZone",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "providerId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "school": {
+          "type": "string"
+        },
+        "campus": {
+          "type": "string"
+        },
+        "academicYear": {
+          "type": "string"
+        },
+        "semesterCode": {
+          "type": "string"
+        },
+        "firstWeekMonday": {
+          "type": "string",
+          "format": "date"
+        },
+        "totalWeeks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "timeZone": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "sectionTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "section": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "start": {
+          "$ref": "#/$defs/isoTime"
+        },
+        "end": {
+          "$ref": "#/$defs/isoTime"
+        }
+      }
+    },
+    "timeRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "termId",
+        "school",
+        "campus",
+        "source",
+        "sections",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "termId": {
+          "type": "string"
+        },
+        "school": {
+          "type": "string"
+        },
+        "campus": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "JIAOWU_DOM",
+            "JIAOWU_EXPLICIT",
+            "USER",
+            "MIGRATED"
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sectionTime"
+          },
+          "minItems": 1
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "externalId",
+        "kind",
+        "recurrence",
+        "title",
+        "teacher",
+        "location",
+        "campus",
+        "notes",
+        "termId",
+        "date",
+        "weekday",
+        "weeks",
+        "startTime",
+        "endTime",
+        "startSection",
+        "endSection",
+        "timeRuleId",
+        "timeSource",
+        "resolutionStatus",
+        "colorKey",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "externalId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "COURSE",
+            "EXAM",
+            "CUSTOM",
+            "ADJUSTMENT"
+          ]
+        },
+        "recurrence": {
+          "enum": [
+            "SINGLE",
+            "WEEKLY"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "teacher": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "campus": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "courseNature": {
+          "type": ["string", "null"]
+        },
+        "totalHours": {
+          "type": ["string", "null"]
+        },
+        "credits": {
+          "type": ["string", "null"]
+        },
+        "termId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "weekday": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 7
+        },
+        "weeks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 40
+          },
+          "uniqueItems": true
+        },
+        "startTime": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/isoTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endTime": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/isoTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startSection": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 40
+        },
+        "endSection": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 40
+        },
+        "timeRuleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeSource": {
+          "enum": [
+            "EXPLICIT",
+            "SECTION_RULE",
+            "USER",
+            "DATE_OVERRIDE",
+            "UNRESOLVED"
+          ]
+        },
+        "resolutionStatus": {
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED",
+            "NEEDS_REVIEW"
+          ]
+        },
+        "colorKey": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "recurrence": {
+                "const": "SINGLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "weekday": {
+                "type": "null"
+              },
+              "weeks": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "recurrence": {
+                "const": "WEEKLY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "termId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "date": {
+                "type": "null"
+              },
+              "weekday": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              },
+              "weeks": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolutionStatus": {
+                "const": "RESOLVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "startTime": {
+                "$ref": "#/$defs/isoTime"
+              },
+              "endTime": {
+                "$ref": "#/$defs/isoTime"
+              }
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "startSection": {
+                  "type": "null"
+                },
+                "endSection": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "startSection": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 40
+                },
+                "endSection": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 40
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "tombstone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "entityType",
+        "deletedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "entityType": {
+          "enum": [
+            "EVENT",
+            "TERM",
+            "TIME_RULE"
+          ]
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activeTermId",
+        "dayStart",
+        "dayEnd",
+        "showWeekends"
+      ],
+      "properties": {
+        "activeTermId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dayStart": {
+          "$ref": "#/$defs/isoTime"
+        },
+        "dayEnd": {
+          "$ref": "#/$defs/isoTime"
+        },
+        "showWeekends": {
+          "type": "boolean"
+        },
+        "widgetUpcomingCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "selectedAcademicProviderId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "providerId": "nfu-zhengfang",
+  "payload": {
+    "items": [
+      {
+        "kch": "SYNTH-EXAM-001",
+        "kcmc": "示例课程 A",
+        "kssj": "2030-01-10 09:00-11:00",
+        "cdmc": "示例教学楼 201",
+        "ksmc": "示例考试"
+      }
+    ]
+  }
+}

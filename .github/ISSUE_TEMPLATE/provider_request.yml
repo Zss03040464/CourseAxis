@@ -1,0 +1,49 @@
+name: 新学校 Provider 提案
+description: 提议适配一个能够合法验证的学校教务系统
+title: "[Provider] "
+labels:
+  - provider
+body:
+  - type: markdown
+    attributes:
+      value: |
+        禁止提交真实账号、学号、Cookie、接口响应、抓包、课程、考试或身份截图。同一厂商不代表已经兼容，请先阅读 Provider 开发文档。
+  - type: input
+    id: school
+    attributes:
+      label: 学校公开名称
+    validations:
+      required: true
+  - type: input
+    id: vendor
+    attributes:
+      label: 教务厂商或系统
+      placeholder: 例如正方；不确定可写未知
+    validations:
+      required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: 合法验证能力
+      description: 维护者不会索取你的账号。
+      options:
+        - 我能使用自己的账号在本机验证
+        - 我只能提供公开信息，不能验证
+    validations:
+      required: true
+  - type: textarea
+    id: differences
+    attributes:
+      label: 已知差异
+      description: 只描述公开的登录方式、厂商版本和界面差异，不粘贴响应。
+  - type: checkboxes
+    id: contract
+    attributes:
+      label: 贡献合同
+      options:
+        - label: 我会只提交从零编写并标记为 synthetic 的 fixture。
+          required: true
+        - label: 我不会提交真实凭据、响应、课程、考试、教师、地点或截图。
+          required: true
+        - label: 我理解新增 Provider 必须提供双端解析、origin 和会话隔离测试。
+          required: true
